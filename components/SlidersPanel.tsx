@@ -39,7 +39,14 @@ export default function SlidersPanel({ data, onChange, label }: Props) {
                 max="5"
                 step="0.5"
                 value={currentValue}
-                onChange={(e) => onChange(axis.key, parseFloat(e.target.value))}
+                onChange={(e) => {
+                  const newValue = parseFloat(e.target.value);
+                  // Validation explicite : clamp entre 1 et 5
+                  const clampedValue = Math.max(1, Math.min(5, newValue));
+                  if (!isNaN(clampedValue) && isFinite(clampedValue)) {
+                    onChange(axis.key, clampedValue);
+                  }
+                }}
                 className="range"
               />
 

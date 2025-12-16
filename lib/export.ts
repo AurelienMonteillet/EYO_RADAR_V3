@@ -1,3 +1,12 @@
+// Sanitize filename to prevent path traversal and injection
+const sanitizeFilename = (filename: string): string => {
+  // Remove any path separators and dangerous characters
+  return filename
+    .replace(/[\/\\\?\*\|"<>:]/g, '')
+    .replace(/^\.+/, '') // Remove leading dots
+    .substring(0, 255); // Limit length
+};
+
 export const downloadSVG = (svgId: string, filename: string) => {
   const svgElement = document.getElementById(svgId);
   if (!svgElement) return;
@@ -15,10 +24,13 @@ export const downloadSVG = (svgId: string, filename: string) => {
   
   const link = document.createElement("a");
   link.href = url;
-  link.download = filename;
+  link.download = sanitizeFilename(filename);
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
+  
+  // Clean up object URL after a delay
+  setTimeout(() => URL.revokeObjectURL(url), 100);
 };
 
 export const downloadPNG = (svgId: string, filename: string) => {
@@ -29,7 +41,7 @@ export const downloadPNG = (svgId: string, filename: string) => {
   const source = serializer.serializeToString(svgElement);
   
   const img = new Image();
-  // Decode SVG for image source
+  // Decode SVG for image source - encodeURIComponent prevents XSS
   img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(source);
 
   img.onload = () => {
@@ -52,9 +64,13 @@ export const downloadPNG = (svgId: string, filename: string) => {
     const pngUrl = canvas.toDataURL("image/png");
     const link = document.createElement("a");
     link.href = pngUrl;
-    link.download = filename;
+    link.download = sanitizeFilename(filename);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+  };
+  
+  img.onerror = () => {
+    console.error('Failed to load SVG image for PNG export');
   };
 };
