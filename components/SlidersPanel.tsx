@@ -43,6 +43,23 @@ export default function SlidersPanel({ data, onChange, label }: Props) {
                 className="range"
               />
 
+              {/* Tick marks for 0.5 step increments */}
+              <div className="slider-ticks">
+                {Array.from({ length: 9 }, (_, i) => {
+                  const isMajor = i % 2 === 0; // Major at 0, 2, 4, 6, 8 (1, 2, 3, 4, 5)
+                  const tickValue = 1 + (i * 0.5);
+                  const activeTickIndex = Math.round(currentValue * 2 - 2);
+                  const isActive = i === activeTickIndex;
+                  
+                  return (
+                    <span
+                      key={i}
+                      className={`tick ${isMajor ? 'major' : 'minor'} ${isActive ? 'active' : ''}`}
+                    />
+                  );
+                })}
+              </div>
+
               <div className="slider-labels">
                 {labels.map((label, index) => (
                   <span

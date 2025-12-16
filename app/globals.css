@@ -165,7 +165,38 @@ body {
 
 .range {
   width: 100%;
-  margin: 8px 0 14px; /* IMPORTANT: space below slider */
+  margin: 8px 0 6px; /* Space below slider, before ticks */
+}
+
+/* Tick marks for 0.5 step increments */
+.slider-ticks {
+  display: grid;
+  grid-template-columns: repeat(9, 1fr);
+  margin-top: 6px;
+  margin-bottom: 8px;
+  pointer-events: none;
+}
+
+.slider-ticks .tick {
+  justify-self: center;
+  width: 1px;
+  background: rgba(255, 255, 255, 0.6);
+}
+
+.slider-ticks .tick.major {
+  height: 8px;
+  opacity: 0.5;
+}
+
+.slider-ticks .tick.minor {
+  height: 4px;
+  opacity: 0.25;
+}
+
+.slider-ticks .tick.active {
+  background: hsl(226 95% 58%);
+  opacity: 1;
+  width: 2px;
 }
 
 /* Labels row */
