@@ -5,6 +5,7 @@ interface Props {
   data: RadarData;
   managerData?: RadarData;
   showManager: boolean;
+  lightBackground?: boolean;
   id?: string;
   onDataChange?: (key: AxisKey, value: number) => void;
   onManagerDataChange?: (key: AxisKey, value: number) => void;
@@ -51,7 +52,7 @@ const getPolygonPoints = (d: RadarData) => {
   `.trim();
 };
 
-export default function RadarDiagram({ data, managerData, showManager, id, onDataChange, onManagerDataChange }: Props) {
+export default function RadarDiagram({ data, managerData, showManager, lightBackground = false, id, onDataChange, onManagerDataChange }: Props) {
   const [dragging, setDragging] = useState<{ type: 'self' | 'manager', axis: number } | null>(null);
   const svgRef = useRef<SVGSVGElement>(null);
 
@@ -126,19 +127,19 @@ export default function RadarDiagram({ data, managerData, showManager, id, onDat
         <defs>
           <style>
             {`
-              .radar-text { font-family: 'Roboto', sans-serif; font-size: 12px; fill: hsl(0 0% 70%); letter-spacing: 0.3px; font-weight: 300; }
-              .radar-axis-label { font-family: 'Roboto', sans-serif; font-size: 22px; font-weight: 400; fill: hsl(0 0% 100%); letter-spacing: 0; }
+              .radar-text { font-family: 'Roboto', sans-serif; font-size: 12px; fill: ${lightBackground ? 'hsl(0 0% 30%)' : 'hsl(0 0% 70%)'}; letter-spacing: 0.3px; font-weight: ${lightBackground ? '400' : '300'}; }
+              .radar-axis-label { font-family: 'Roboto', sans-serif; font-size: 22px; font-weight: 400; fill: ${lightBackground ? 'hsl(240 6% 5%)' : 'hsl(0 0% 100%)'}; letter-spacing: 0; }
             `}
           </style>
         </defs>
 
-        <rect x="0" y="0" width="1200" height="1200" fill="hsl(0 0% 9%)" />
+        <rect x="0" y="0" width="1200" height="1200" fill={lightBackground ? "hsl(0 0% 100%)" : "hsl(0 0% 9%)"} />
 
         {/* --- GRILLE FIXE --- */}
 
         {/* Axes principaux */}
-        <line x1="600" y1="50" x2="600" y2="1150" stroke="hsl(0 0% 70%)" strokeWidth="1.5" opacity="0.3" />
-        <line x1="50" y1="600" x2="1150" y2="600" stroke="hsl(0 0% 70%)" strokeWidth="1.5" opacity="0.3" />
+        <line x1="600" y1="50" x2="600" y2="1150" stroke={lightBackground ? "hsl(0 0% 40%)" : "hsl(0 0% 70%)"} strokeWidth="1.5" opacity={lightBackground ? "0.5" : "0.3"} />
+        <line x1="50" y1="600" x2="1150" y2="600" stroke={lightBackground ? "hsl(0 0% 40%)" : "hsl(0 0% 70%)"} strokeWidth="1.5" opacity={lightBackground ? "0.5" : "0.3"} />
 
         {/* Les Anneaux */}
         {RADII.map((r, i) => {
@@ -149,10 +150,10 @@ export default function RadarDiagram({ data, managerData, showManager, id, onDat
               key={r}
               points={`600,${600 - r} ${600 + r},600 600,${600 + r} ${600 - r},600`}
               fill="none"
-              stroke={isOuterFrame ? "hsl(0 0% 70%)" : "hsl(0 0% 70%)"}
+              stroke={lightBackground ? "hsl(0 0% 40%)" : "hsl(0 0% 70%)"}
               strokeWidth={isOuterFrame ? "2" : "1.5"}
               strokeDasharray={isOuterFrame ? "0" : "8 6"}
-              opacity={isOuterFrame ? "0.5" : "0.3"}
+              opacity={isOuterFrame ? (lightBackground ? "0.6" : "0.5") : (lightBackground ? "0.4" : "0.3")}
             />
           );
         })}

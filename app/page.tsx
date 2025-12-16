@@ -26,6 +26,7 @@ export default function Home() {
   const [data, setData] = useState<RadarData>(INITIAL_DATA);
   const [managerData, setManagerData] = useState<RadarData>(INITIAL_MANAGER_DATA);
   const [showManager, setShowManager] = useState(false);
+  const [lightBackground, setLightBackground] = useState(false);
 
   const handleSliderChange = (key: AxisKey, val: number) => {
     setData((prev) => ({ ...prev, [key]: val }));
@@ -45,6 +46,31 @@ export default function Home() {
       {/* Gradient de fond radial */}
       <div className="absolute inset-0 bg-gradient-dark-radial pointer-events-none"></div>
       <div className="relative z-10 w-full flex flex-col items-center">
+        {/* Light Background Toggle - Top Right */}
+        <div className="absolute top-0 right-0 z-20">
+          <button
+            onClick={() => setLightBackground(!lightBackground)}
+            className="inline-flex h-10 items-center justify-center rounded-full border border-white-600 bg-transparent text-white-900 px-4 font-heading font-normal text-sm leading-6 transition-all hover:bg-white-900/10 cursor-pointer focus-visible:ring-[3px] focus-visible:ring-[#8aabff]"
+            aria-label={lightBackground ? "Switch to dark background" : "Switch to light background"}
+          >
+            {lightBackground ? (
+              <span className="flex items-center gap-2">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                </svg>
+                Dark
+              </span>
+            ) : (
+              <span className="flex items-center gap-2">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                </svg>
+                Light
+              </span>
+            )}
+          </button>
+        </div>
+        
         {/* Header */}
         <div className="text-center mb-10">
           <h1 className="text-3xl md:text-4xl font-heading font-normal tracking-tight mb-2 text-white-900">EOY Radar V3</h1>
@@ -58,6 +84,7 @@ export default function Home() {
             data={data} 
             managerData={showManager ? managerData : undefined}
             showManager={showManager}
+            lightBackground={lightBackground}
             onDataChange={handleSliderChange}
             onManagerDataChange={handleManagerSliderChange}
           />
