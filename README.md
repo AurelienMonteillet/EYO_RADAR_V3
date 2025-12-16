@@ -1,80 +1,63 @@
-# EOY Review - Vue Radar Level V3 (Next.js)
+# EOY Review - Radar View Level V3 (Next.js)
 
-Application Next.js moderne avec Tailwind CSS pour créer votre vue radar d'auto-évaluation basée sur le framework Level V3.
+Modern Next.js application with Tailwind CSS to create your radar view self-assessment based on the Level V3 framework.
 
 ## Installation
 
-1. Installez les dépendances :
+1. Install dependencies:
 ```bash
 npm install
 ```
 
-2. Lancez le serveur de développement :
+2. Start the development server:
 ```bash
 npm run dev
 ```
 
-3. Ouvrez [http://localhost:3000](http://localhost:3000) dans votre navigateur
+3. Open [http://localhost:3000](http://localhost:3000) in your browser
 
-## Structure du projet
+## Project Structure
 
 ```
 nextjs/
 ├── app/
-│   ├── page.tsx          # Page principale
-│   ├── layout.tsx        # Layout de l'application
-│   └── globals.css       # Styles globaux avec Tailwind
+│   ├── page.tsx          # Main page
+│   ├── layout.tsx        # Application layout
+│   └── globals.css       # Global styles with Tailwind
 ├── components/
-│   ├── RadarDiagram.tsx  # Composant SVG du diagramme radar
-│   └── SlidersPanel.tsx  # Panneau de contrôles avec sliders
+│   ├── RadarDiagram.tsx  # SVG radar diagram component
+│   └── SlidersPanel.tsx  # Control panel with sliders
 ├── lib/
-│   └── export.ts         # Fonctions d'export SVG/PNG
-├── types.ts              # Types TypeScript et configuration des échelles
+│   └── export.ts         # SVG/PNG export functions
+├── types.ts              # TypeScript types and ladder configuration
 └── package.json
 ```
 
-## Fonctionnalités
+## Features
 
-- **Diagramme radar interactif** avec les 4 axes du framework Level V3
-- **Contrôles avec sliders** pour ajuster vos niveaux (1-5)
-- **Overlay Manager** : Affichez la perception de votre manager pour comparaison
-- **Export SVG/PNG** : Téléchargez votre diagramme pour votre auto-évaluation
-- **Design moderne** avec Tailwind CSS et thème sombre
+- **Interactive radar diagram** with the 4 axes of the Level V3 framework
+- **Slider controls** to adjust your levels (1-5)
+- **Manager overlay**: Display your manager's perception for comparison
+- **SVG/PNG export**: Download your diagram for your self-assessment
+- **Modern design** with Tailwind CSS and dark theme
 
-## Les 4 Axes
+## The 4 Axes
 
-1. **Engineering Excellence** (Haut-Gauche) : Learns → Applies → Masters → Advances → Pioneers
-2. **Delivery & Impact** (Haut-Droite) : Tasks → Features → Projects → Initiatives → Strategy
-3. **People** (Bas-Droite) : Absorbs → Supports → Mentors → Guides → Elevates
-4. **Innovation & Strategy** (Bas-Gauche) : Follows → Improves → Innovates → Architects → Envisions
+1. **Engineering Excellence** (Top-Left) : Learns → Applies → Masters → Advances → Pioneers
+2. **Delivery & Impact** (Top-Right) : Tasks → Features → Projects → Initiatives → Strategy
+3. **People** (Bottom-Right) : Absorbs → Supports → Mentors → Guides → Elevates
+4. **Innovation & Strategy** (Bottom-Left) : Follows → Improves → Innovates → Architects → Envisions
 
-## Personnalisation
+## Available Scripts
 
-### Modifier les échelles (Ladders)
+- `npm run dev` : Start the development server
+- `npm run build` : Build the application for production
+- `npm start` : Start the production server
+- `npm run lint` : Check code with ESLint
 
-Éditez le fichier `types.ts` pour modifier les labels de progression :
+## Technologies Used
 
-```typescript
-export const LADDERS = {
-  engineering: ['Learns', 'Applies', 'Masters', 'Advances', 'Pioneers'],
-  // ... autres axes
-}
-```
-
-### Modifier les données par défaut
-
-Dans `app/page.tsx`, modifiez `INITIAL_DATA` et `MANAGER_DATA` pour vos valeurs par défaut.
-
-## Scripts disponibles
-
-- `npm run dev` : Lance le serveur de développement
-- `npm run build` : Compile l'application pour la production
-- `npm start` : Lance le serveur de production
-- `npm run lint` : Vérifie le code avec ESLint
-
-## Technologies utilisées
-
-- **Next.js 14** : Framework React
-- **TypeScript** : Typage statique
-- **Tailwind CSS** : Styles utilitaires
-- **SVG** : Rendu du diagramme radar
+- **Next.js 14** : React framework
+- **TypeScript** : Static typing
+- **Tailwind CSS** : Utility-first CSS
+- **SVG** : Radar diagram rendering
