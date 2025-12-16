@@ -146,7 +146,7 @@ export default function Home() {
           <div className="flex-grow"></div>
           <button 
             onClick={() => downloadSVG('eoy-radar', 'eoy-radar-v3.svg')}
-            className="inline-flex h-10 items-center justify-center rounded-full border border-white-600 bg-transparent text-white-900 px-4 font-heading font-normal text-sm leading-6 transition-all hover:bg-white-900/10 cursor-pointer focus-visible:ring-[3px] focus-visible:ring-[#8aabff]"
+            className="inline-flex h-12 items-center justify-center rounded-full bg-white-700 text-black-900 px-5 font-heading font-normal text-lg leading-7 transition-all hover:bg-white-900 cursor-pointer focus-visible:ring-[3px] focus-visible:ring-[#8aabff]"
           >
             Export SVG
           </button>
