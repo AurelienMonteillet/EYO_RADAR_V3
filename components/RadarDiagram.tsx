@@ -178,18 +178,7 @@ export default function RadarDiagram({ data, managerData, showManager, id }: Pro
 
         {/* --- OVERLAYS --- */}
 
-        {/* Manager Overlay */}
-        {showManager && managerData && (
-          <polygon
-            points={getPolygonPoints(managerData)}
-            fill="rgba(255, 255, 255, 0.1)"
-            stroke="rgba(255, 255, 255, 0.5)"
-            strokeWidth="2"
-            strokeDasharray="6 4"
-          />
-        )}
-
-        {/* Self Overlay */}
+        {/* Self Overlay (Green) - Always visible */}
         <polygon
           points={getPolygonPoints(data)}
           fill="rgba(34, 197, 94, 0.45)"
@@ -207,8 +196,33 @@ export default function RadarDiagram({ data, managerData, showManager, id }: Pro
            if (i === 1) cx += r; // Right
            if (i === 2) cy += r; // Bottom
            if (i === 3) cx -= r; // Left
-           return <circle key={i} cx={cx} cy={cy} r="4" fill="#22c55e" stroke="black" strokeWidth="1" />;
+           return <circle key={`self-${i}`} cx={cx} cy={cy} r="4" fill="#22c55e" stroke="black" strokeWidth="1" />;
         })}
+
+        {/* Manager Overlay (Blue) - Only when showManager is true */}
+        {showManager && managerData && (
+          <>
+            <polygon
+              points={getPolygonPoints(managerData)}
+              fill="rgba(59, 130, 246, 0.35)"
+              stroke="#3b82f6"
+              strokeWidth="3"
+              strokeLinejoin="round"
+            />
+            
+            {/* Petits cercles aux sommets du polygone Manager pour finition */}
+            {[managerData.engineering, managerData.delivery, managerData.people, managerData.innovation].map((val, i) => {
+               // On recalcule juste les coords x,y pour les points
+               let cx = 500, cy = 500;
+               const r = getRadius(val);
+               if (i === 0) cy -= r; // Top
+               if (i === 1) cx += r; // Right
+               if (i === 2) cy += r; // Bottom
+               if (i === 3) cx -= r; // Left
+               return <circle key={`manager-${i}`} cx={cx} cy={cy} r="4" fill="#3b82f6" stroke="black" strokeWidth="1" />;
+            })}
+          </>
+        )}
 
       </svg>
     </div>

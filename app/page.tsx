@@ -15,7 +15,7 @@ const INITIAL_DATA: RadarData = {
 };
 
 // Example manager data
-const MANAGER_DATA: RadarData = {
+const INITIAL_MANAGER_DATA: RadarData = {
   engineering: 3.5,
   delivery: 4.0,
   people: 2.5,
@@ -24,13 +24,21 @@ const MANAGER_DATA: RadarData = {
 
 export default function Home() {
   const [data, setData] = useState<RadarData>(INITIAL_DATA);
+  const [managerData, setManagerData] = useState<RadarData>(INITIAL_MANAGER_DATA);
   const [showManager, setShowManager] = useState(false);
 
   const handleSliderChange = (key: AxisKey, val: number) => {
     setData((prev) => ({ ...prev, [key]: val }));
   };
 
-  const handleReset = () => setData(INITIAL_DATA);
+  const handleManagerSliderChange = (key: AxisKey, val: number) => {
+    setManagerData((prev) => ({ ...prev, [key]: val }));
+  };
+
+  const handleReset = () => {
+    setData(INITIAL_DATA);
+    setManagerData(INITIAL_MANAGER_DATA);
+  };
 
   return (
     <main className="min-h-screen bg-black text-white p-4 md:p-8 font-sans flex flex-col items-center">
@@ -41,12 +49,12 @@ export default function Home() {
         <p className="text-gray-500">Self-Evaluation Framework</p>
       </div>
 
-      {/* Diagram Section */}
+      {/* Diagram Section - Single graph with both overlays */}
       <div className="w-full flex justify-center mb-8">
         <RadarDiagram 
           id="eoy-radar" 
           data={data} 
-          managerData={MANAGER_DATA}
+          managerData={showManager ? managerData : undefined}
           showManager={showManager}
         />
       </div>
@@ -65,17 +73,36 @@ export default function Home() {
              onChange={(e) => setShowManager(e.target.checked)}
              className="w-4 h-4 accent-gray-500"
            />
-           <div className="w-4 h-4 border border-dashed border-gray-400 bg-white/10 rounded"></div>
-           <span className="text-sm text-gray-300">Manager Benchmark</span>
+           <div className="w-4 h-4 border border-blue-400 bg-blue-500/40 rounded"></div>
+           <span className="text-sm text-gray-300">Manager View</span>
         </label>
       </div>
 
-      {/* Input Section */}
-      <SlidersPanel 
-        data={data} 
-        onChange={handleSliderChange} 
-        label="Votre Auto-évaluation" 
-      />
+      {/* Input Sections */}
+      {showManager ? (
+        // Two slider panels side by side when manager mode is enabled
+        <div className="w-full max-w-7xl">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <SlidersPanel 
+              data={data} 
+              onChange={handleSliderChange} 
+              label="Your Self-Assessment" 
+            />
+            <SlidersPanel 
+              data={managerData} 
+              onChange={handleManagerSliderChange} 
+              label="Manager Assessment" 
+            />
+          </div>
+        </div>
+      ) : (
+        // Single slider panel when manager mode is disabled
+        <SlidersPanel 
+          data={data} 
+          onChange={handleSliderChange} 
+          label="Your Self-Assessment" 
+        />
+      )}
 
       {/* Action Buttons */}
       <div className="flex flex-wrap gap-4 mt-8 justify-center w-full max-w-2xl">
