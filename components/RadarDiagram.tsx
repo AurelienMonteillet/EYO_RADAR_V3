@@ -1,31 +1,40 @@
-import React from 'react';
-import { RadarData, LADDERS } from '@/types';
+import React, { useState, useRef } from 'react';
+import { RadarData, LADDERS, AxisKey } from '@/types';
 
 interface Props {
   data: RadarData;
   managerData?: RadarData;
   showManager: boolean;
   id?: string;
+  onDataChange?: (key: AxisKey, value: number) => void;
+  onManagerDataChange?: (key: AxisKey, value: number) => void;
 }
 
-const CENTER = 500;
+const CENTER = 600; // Centré dans le viewBox 1200x1200
 // On a besoin de place pour 5 niveaux pointillés + 1 cadre solide
-// Disons que le cadre solide est à 420px.
+// Disons que le cadre solide est à 500px (plus d'espace pour les labels).
 // On divise l'espace en 6 intervalles égaux pour l'harmonie visuelle.
-const MAX_RADIUS = 420;
+const MAX_RADIUS = 500;
 const STEPS = 6; 
-const STEP_SIZE = MAX_RADIUS / STEPS; // 70px par niveau
+const STEP_SIZE = MAX_RADIUS / STEPS; // ~83px par niveau
 
-// On génère les 6 rayons : [70, 140, 210, 280, 350, 420]
+// On génère les 6 rayons : [83, 166, 249, 332, 415, 500]
 const RADII = Array.from({ length: STEPS }, (_, i) => (i + 1) * STEP_SIZE);
 
 // Helper : Map le score (1..5) sur les rayons (1..5)
-// Score 1.0 => Rayon 1 (70px)
-// Score 5.0 => Rayon 5 (350px) -> C'est la ligne "Pioneers" (dernier pointillé)
-// Le Rayon 6 (420px) reste le cadre vide
+// Score 1.0 => Rayon 1 (83px)
+// Score 5.0 => Rayon 5 (415px) -> C'est la ligne "Pioneers" (dernier pointillé)
+// Le Rayon 6 (500px) reste le cadre vide
 const getRadius = (score: number) => {
   const clamped = Math.max(0, Math.min(score, 5));
   return clamped * STEP_SIZE;
+};
+
+// Helper : Convertir un rayon en score (1..5)
+const getScoreFromRadius = (radius: number) => {
+  const clamped = Math.max(0, Math.min(radius, MAX_RADIUS));
+  const score = (clamped / STEP_SIZE);
+  return Math.max(1, Math.min(5, Math.round(score * 10) / 10)); // Arrondir à 0.1
 };
 
 const getPolygonPoints = (d: RadarData) => {
@@ -42,31 +51,94 @@ const getPolygonPoints = (d: RadarData) => {
   `.trim();
 };
 
-export default function RadarDiagram({ data, managerData, showManager, id }: Props) {
+export default function RadarDiagram({ data, managerData, showManager, id, onDataChange, onManagerDataChange }: Props) {
+  const [dragging, setDragging] = useState<{ type: 'self' | 'manager', axis: number } | null>(null);
+  const svgRef = useRef<SVGSVGElement>(null);
+
+  // Convertir les coordonnées SVG en coordonnées écran
+  const getSVGPoint = (clientX: number, clientY: number): { x: number; y: number } | null => {
+    if (!svgRef.current) return null;
+    const svg = svgRef.current;
+    const pt = svg.createSVGPoint();
+    pt.x = clientX;
+    pt.y = clientY;
+    const svgPoint = pt.matrixTransform(svg.getScreenCTM()?.inverse());
+    return { x: svgPoint.x, y: svgPoint.y };
+  };
+
+  // Calculer la distance depuis le centre et convertir en score
+  // Les points sont contraints le long de leur axe respectif
+  const calculateScoreFromPosition = (x: number, y: number, axisIndex: number): number => {
+    let distance: number;
+    if (axisIndex === 0) { // Top (engineering) - mouvement vertical uniquement
+      distance = CENTER - y;
+    } else if (axisIndex === 1) { // Right (delivery) - mouvement horizontal uniquement
+      distance = x - CENTER;
+    } else if (axisIndex === 2) { // Bottom (people) - mouvement vertical uniquement
+      distance = y - CENTER;
+    } else { // Left (innovation) - mouvement horizontal uniquement
+      distance = CENTER - x;
+    }
+    // Contrainte : distance doit être positive et dans les limites
+    const clampedDistance = Math.max(0, Math.min(Math.abs(distance), MAX_RADIUS));
+    return getScoreFromRadius(clampedDistance);
+  };
+
+  const handleMouseDown = (e: React.MouseEvent, type: 'self' | 'manager', axisIndex: number) => {
+    e.preventDefault();
+    setDragging({ type, axis: axisIndex });
+  };
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!dragging || !svgRef.current) return;
+    
+    const svgPoint = getSVGPoint(e.clientX, e.clientY);
+    if (!svgPoint) return;
+
+    const newScore = calculateScoreFromPosition(svgPoint.x, svgPoint.y, dragging.axis);
+    const axisKeys: AxisKey[] = ['engineering', 'delivery', 'people', 'innovation'];
+    const axisKey = axisKeys[dragging.axis];
+
+    if (dragging.type === 'self' && onDataChange) {
+      onDataChange(axisKey, newScore);
+    } else if (dragging.type === 'manager' && onManagerDataChange) {
+      onManagerDataChange(axisKey, newScore);
+    }
+  };
+
+  const handleMouseUp = () => {
+    setDragging(null);
+  };
+
   return (
-    <div className="w-full max-w-[600px] aspect-square mx-auto border border-gray-800 rounded-lg overflow-hidden bg-black relative">
+    <div className="w-full max-w-[400px] md:max-w-[800px] lg:max-w-[1000px] aspect-square mx-auto border border-black-600 rounded-2xl overflow-hidden bg-black-800 relative shadow-[0_0_40px_rgba(0,0,0,0.3)]">
       <svg
+        ref={svgRef}
         id={id}
-        viewBox="0 0 1000 1000"
+        viewBox="0 0 1200 1200"
         className="w-full h-full block"
         xmlns="http://www.w3.org/2000/svg"
+        onMouseMove={handleMouseMove}
+        onMouseUp={handleMouseUp}
+        onMouseLeave={handleMouseUp}
+        style={{ cursor: dragging ? 'grabbing' : 'default' }}
       >
         <defs>
           <style>
             {`
-              .radar-text { font-family: sans-serif; font-size: 13px; fill: #9ca3af; letter-spacing: 0.5px; }
-              .radar-axis-label { font-family: sans-serif; font-size: 22px; font-weight: 600; fill: #e5e7eb; }
+              .radar-text { font-family: 'Roboto', sans-serif; font-size: 12px; fill: hsl(0 0% 70%); letter-spacing: 0.3px; font-weight: 300; }
+              .radar-axis-label { font-family: 'Roboto', sans-serif; font-size: 22px; font-weight: 400; fill: hsl(0 0% 100%); letter-spacing: 0; }
             `}
           </style>
         </defs>
 
-        <rect x="0" y="0" width="1000" height="1000" fill="#000000" />
+        <rect x="0" y="0" width="1200" height="1200" fill="hsl(0 0% 9%)" />
 
         {/* --- GRILLE FIXE --- */}
 
         {/* Axes principaux */}
-        <line x1="500" y1="40" x2="500" y2="960" stroke="#333" strokeWidth="2" />
-        <line x1="40" y1="500" x2="960" y2="500" stroke="#333" strokeWidth="2" />
+        <line x1="600" y1="50" x2="600" y2="1150" stroke="hsl(0 0% 70%)" strokeWidth="1.5" opacity="0.3" />
+        <line x1="50" y1="600" x2="1150" y2="600" stroke="hsl(0 0% 70%)" strokeWidth="1.5" opacity="0.3" />
 
         {/* Les Anneaux */}
         {RADII.map((r, i) => {
@@ -75,11 +147,12 @@ export default function RadarDiagram({ data, managerData, showManager, id }: Pro
           return (
             <polygon
               key={r}
-              points={`500,${500 - r} ${500 + r},500 500,${500 + r} ${500 - r},500`}
+              points={`600,${600 - r} ${600 + r},600 600,${600 + r} ${600 - r},600`}
               fill="none"
-              stroke={isOuterFrame ? "#666" : "#333"}
+              stroke={isOuterFrame ? "hsl(0 0% 70%)" : "hsl(0 0% 70%)"}
               strokeWidth={isOuterFrame ? "2" : "1.5"}
               strokeDasharray={isOuterFrame ? "0" : "8 6"}
+              opacity={isOuterFrame ? "0.5" : "0.3"}
             />
           );
         })}
@@ -98,9 +171,9 @@ export default function RadarDiagram({ data, managerData, showManager, id }: Pro
         {LADDERS.engineering.map((label, i) => {
           const r = RADII[i];
           // Coordonnées : Milieu du segment haut-gauche
-          // x = 500 - r/2, y = 500 - r/2
-          const x = 500 - (r / 2);
-          const y = 500 - (r / 2);
+          // x = 600 - r/2, y = 600 - r/2
+          const x = 600 - (r / 2);
+          const y = 600 - (r / 2);
           return (
             <text 
               key={`eng-${i}`} 
@@ -117,8 +190,8 @@ export default function RadarDiagram({ data, managerData, showManager, id }: Pro
         {/* 2. Delivery (Top-Right diagonal) */}
         {LADDERS.delivery.map((label, i) => {
           const r = RADII[i];
-          const x = 500 + (r / 2);
-          const y = 500 - (r / 2);
+          const x = 600 + (r / 2);
+          const y = 600 - (r / 2);
           return (
             <text 
               key={`del-${i}`} 
@@ -135,8 +208,8 @@ export default function RadarDiagram({ data, managerData, showManager, id }: Pro
         {/* 3. People (Bottom-Right diagonal) */}
         {LADDERS.people.map((label, i) => {
           const r = RADII[i];
-          const x = 500 + (r / 2);
-          const y = 500 + (r / 2);
+          const x = 600 + (r / 2);
+          const y = 600 + (r / 2);
           // Pour le bas, on met le texte "au dessus" de la ligne (intérieur du diamant) pour lisibilité
           // ou "en dessous". Sur le screenshot, c'est au-dessus (intérieur).
           return (
@@ -155,8 +228,8 @@ export default function RadarDiagram({ data, managerData, showManager, id }: Pro
         {/* 4. Innovation (Bottom-Left diagonal) */}
         {LADDERS.innovation.map((label, i) => {
           const r = RADII[i];
-          const x = 500 - (r / 2);
-          const y = 500 + (r / 2);
+          const x = 600 - (r / 2);
+          const y = 600 + (r / 2);
           return (
             <text 
               key={`inn-${i}`} 
@@ -171,55 +244,82 @@ export default function RadarDiagram({ data, managerData, showManager, id }: Pro
         })}
 
         {/* --- TITRES AXES --- */}
-        <text x="500" y="35" textAnchor="middle" className="radar-axis-label">Engineering Excellence</text>
-        <text x="965" y="500" textAnchor="middle" className="radar-axis-label" transform="rotate(90, 965, 500)">Delivery & Impact</text>
-        <text x="500" y="985" textAnchor="middle" className="radar-axis-label">People</text>
-        <text x="35" y="500" textAnchor="middle" className="radar-axis-label" transform="rotate(-90, 35, 500)">Innovation & Strategy</text>
+        <text x="600" y="30" textAnchor="middle" className="radar-axis-label">Engineering Excellence</text>
+        <text x="1170" y="600" textAnchor="middle" className="radar-axis-label" transform="rotate(90, 1170, 600)">Delivery & Impact</text>
+        <text x="600" y="1180" textAnchor="middle" className="radar-axis-label">People</text>
+        <text x="30" y="600" textAnchor="middle" className="radar-axis-label" transform="rotate(-90, 30, 600)">Innovation & Strategy</text>
 
         {/* --- OVERLAYS --- */}
 
         {/* Self Overlay (Green) - Always visible */}
         <polygon
           points={getPolygonPoints(data)}
-          fill="rgba(34, 197, 94, 0.45)"
+          fill="rgba(34, 197, 94, 0.35)"
           stroke="#22c55e"
           strokeWidth="3"
           strokeLinejoin="round"
         />
         
-        {/* Petits cercles aux sommets du polygone Self pour finition */}
+        {/* Petits cercles aux sommets du polygone Self pour finition - Draggable */}
         {[data.engineering, data.delivery, data.people, data.innovation].map((val, i) => {
            // On recalcule juste les coords x,y pour les points
-           let cx = 500, cy = 500;
+           let cx = CENTER, cy = CENTER;
            const r = getRadius(val);
            if (i === 0) cy -= r; // Top
            if (i === 1) cx += r; // Right
            if (i === 2) cy += r; // Bottom
            if (i === 3) cx -= r; // Left
-           return <circle key={`self-${i}`} cx={cx} cy={cy} r="4" fill="#22c55e" stroke="black" strokeWidth="1" />;
+           const isDragging = dragging?.type === 'self' && dragging.axis === i;
+           return (
+             <circle 
+               key={`self-${i}`} 
+               cx={cx} 
+               cy={cy} 
+               r={isDragging ? "7" : "6"} 
+               fill="#22c55e" 
+               stroke="#FFFFFF" 
+               strokeWidth={isDragging ? "2.5" : "2"}
+               style={{ cursor: 'grab' }}
+               onMouseDown={(e) => handleMouseDown(e, 'self', i)}
+             />
+           );
         })}
 
-        {/* Manager Overlay (Blue) - Only when showManager is true */}
+        {/* Manager Overlay (Tezos Blue Light) - Only when showManager is true */}
         {showManager && managerData && (
           <>
             <polygon
               points={getPolygonPoints(managerData)}
-              fill="rgba(59, 130, 246, 0.35)"
-              stroke="#3b82f6"
+              fill="rgba(92, 114, 250, 0.2)"
+              stroke="hsl(226 95% 58%)"
               strokeWidth="3"
               strokeLinejoin="round"
+              strokeDasharray="6 4"
             />
             
-            {/* Petits cercles aux sommets du polygone Manager pour finition */}
+            {/* Petits cercles aux sommets du polygone Manager pour finition - Draggable */}
             {[managerData.engineering, managerData.delivery, managerData.people, managerData.innovation].map((val, i) => {
                // On recalcule juste les coords x,y pour les points
-               let cx = 500, cy = 500;
+               let cx = CENTER, cy = CENTER;
                const r = getRadius(val);
                if (i === 0) cy -= r; // Top
                if (i === 1) cx += r; // Right
                if (i === 2) cy += r; // Bottom
                if (i === 3) cx -= r; // Left
-               return <circle key={`manager-${i}`} cx={cx} cy={cy} r="4" fill="#3b82f6" stroke="black" strokeWidth="1" />;
+               const isDragging = dragging?.type === 'manager' && dragging.axis === i;
+               return (
+                 <circle 
+                   key={`manager-${i}`} 
+                   cx={cx} 
+                   cy={cy} 
+                   r={isDragging ? "7" : "6"} 
+                   fill="hsl(226 95% 58%)" 
+                   stroke="#FFFFFF" 
+                   strokeWidth={isDragging ? "2.5" : "2"}
+                   style={{ cursor: 'grab' }}
+                   onMouseDown={(e) => handleMouseDown(e, 'manager', i)}
+                 />
+               );
             })}
           </>
         )}

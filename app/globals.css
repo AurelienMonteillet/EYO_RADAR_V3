@@ -2,18 +2,192 @@
 @tailwind components;
 @tailwind utilities;
 
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Roboto+Mono:wght@400&display=swap');
+
 :root {
-  --foreground-rgb: 255, 255, 255;
-  --background-start-rgb: 0, 0, 0;
-  --background-end-rgb: 0, 0, 0;
+  /* Tezos Brand Colors - Final Branding Kit */
+  --brand-blue-600: hsl(226 95% 58%);
+  --brand-blue-400: #8aabff;
+  --brand-blue-300: #a8c0ff;
+  --brand-lilac-600: hsl(276 60% 68%);
+  
+  --black-900: hsl(240 6% 5%);
+  --black-800: hsl(0 0% 9%);
+  --black-600: hsl(0 0% 20%);
+  
+  --white-900: hsl(0 0% 100%);
+  --white-800: hsl(0 0% 90%);
+  --white-700: rgba(255, 255, 255, 0.8);
+  --white-600: hsl(0 0% 70%);
+  
+  --radius: 0.625rem;
 }
 
 body {
-  color: rgb(var(--foreground-rgb));
-  background: linear-gradient(
-      to bottom,
-      transparent,
-      rgb(var(--background-end-rgb))
-    )
-    rgb(var(--background-start-rgb));
+  font-family: 'Roboto', sans-serif;
+  color: var(--white-900);
+  background: var(--black-900);
+  letter-spacing: 0;
+  line-height: 1.2;
+}
+
+/* Gradient Dark Radial - Tezos Branding */
+.bg-gradient-dark-radial {
+  background: radial-gradient(circle at 30% 50%, rgba(92, 114, 250, 0.15) 0%, transparent 50%),
+    radial-gradient(circle at 70% 80%, rgba(184, 134, 232, 0.1) 0%, transparent 50%), 
+    hsl(240 6% 5%);
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--black-900);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--black-600);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--brand-blue-600);
+}
+
+/* Custom slider styles - Tezos Brand Guidelines */
+/* The slider must display a visible horizontal track */
+.range {
+  width: 100%;
+  height: 32px;            /* gives room for thumb */
+  background: transparent;
+  appearance: none;
+  -webkit-appearance: none;
+  cursor: pointer;
+}
+
+/* Chrome / Safari track - MUST use ::-webkit-slider-runnable-track */
+.range::-webkit-slider-runnable-track {
+  height: 4px;
+  background: rgba(255, 255, 255, 0.25);
+  border-radius: 999px;
+}
+
+/* Chrome / Safari thumb */
+.range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 999px;
+  background: hsl(226 95% 58%);
+  border: 2px solid rgba(255, 255, 255, 0.9);
+  margin-top: -7px; /* centers thumb on 4px track: (18-4)/2 = 7 */
+  box-shadow: 0 0 0 6px rgba(92, 114, 250, 0.15);
+  cursor: grab;
+  transition: all 0.15s ease;
+}
+
+.range::-webkit-slider-thumb:hover {
+  background: #8aabff;
+  box-shadow: 0 0 0 8px rgba(92, 114, 250, 0.2);
+  transform: scale(1.1);
+}
+
+.range::-webkit-slider-thumb:active {
+  cursor: grabbing;
+  transform: scale(1.15);
+  box-shadow: 0 0 0 10px rgba(92, 114, 250, 0.25);
+}
+
+/* Firefox track */
+.range::-moz-range-track {
+  height: 4px;
+  background: rgba(255, 255, 255, 0.25);
+  border-radius: 999px;
+}
+
+/* Firefox thumb */
+.range::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  border-radius: 999px;
+  background: hsl(226 95% 58%);
+  border: 2px solid rgba(255, 255, 255, 0.9);
+  box-shadow: 0 0 0 6px rgba(92, 114, 250, 0.15);
+  cursor: grab;
+  transition: all 0.15s ease;
+}
+
+.range::-moz-range-thumb:hover {
+  background: #8aabff;
+  box-shadow: 0 0 0 8px rgba(92, 114, 250, 0.2);
+  transform: scale(1.1);
+}
+
+.range::-moz-range-thumb:active {
+  cursor: grabbing;
+  transform: scale(1.15);
+  box-shadow: 0 0 0 10px rgba(92, 114, 250, 0.25);
+}
+
+/* Remove Firefox focus outline gap */
+.range::-moz-focus-outer {
+  border: 0;
+}
+
+/* Slider block structure - prevents text overlap */
+.slider-block {
+  margin-bottom: 32px;
+}
+
+.slider-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.slider-header .title {
+  font-size: 14px;
+  font-weight: 400;
+  color: hsl(0 0% 100%);
+  font-family: 'Roboto', sans-serif;
+}
+
+.slider-header .value {
+  font-size: 18px;
+  font-weight: 400;
+  color: hsl(226 95% 58%);
+  font-family: 'Roboto Mono', monospace;
+}
+
+.range {
+  width: 100%;
+  margin: 8px 0 14px; /* IMPORTANT: space below slider */
+}
+
+/* Labels row */
+.slider-labels {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  margin-top: 8px;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  color: rgba(255, 255, 255, 0.55);
+  font-family: 'Roboto', sans-serif;
+}
+
+.slider-labels .tick {
+  text-align: center;
+  white-space: nowrap;
+  font-weight: 300;
+  transition: all 0.2s ease;
+}
+
+.slider-labels .tick.active {
+  color: hsl(0 0% 100%);
+  font-weight: 500;
+  opacity: 1;
 }
