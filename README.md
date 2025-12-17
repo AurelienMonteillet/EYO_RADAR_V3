@@ -61,3 +61,8 @@ nextjs/
 - **TypeScript** : Static typing
 - **Tailwind CSS** : Utility-first CSS
 - **SVG** : Radar diagram rendering
+
+## Contributing
+
+- **Framework**: The Level V3 framework was created by **Pierre Mary**. This application is an implementation of his framework for EOY (End of Year) reviews.
+- **Tool**: Created by **Aurelien Monteillet**

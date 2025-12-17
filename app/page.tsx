@@ -158,8 +158,10 @@ export default function Home() {
           </button>
         </div>
 
-        <footer className="mt-16 text-white-600 text-xs font-light">
-          EOY Radar Tool - V3 Framework
+        <footer className="mt-16 text-white-600 text-xs font-light text-center">
+          <div>EOY Radar Tool - V3 Framework</div>
+          <div className="mt-2">Framework by Pierre Mary</div>
+          <div className="mt-1">Tool by Aurelien Monteillet</div>
         </footer>
       </div>
     </main>
