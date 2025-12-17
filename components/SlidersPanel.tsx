@@ -23,14 +23,17 @@ export default function SlidersPanel({ data, onChange, label }: Props) {
         {AXIS_CONFIG.map((axis) => {
           const labels = LADDERS[axis.key];
           const currentValue = data[axis.key];
-          // Round to nearest integer (1-5) to determine active label
-          const activeIndex = Math.round(currentValue) - 1;
+          
+          // Determine which labels should be active
+          // If value is a half-step (e.g., 2.5), highlight both adjacent labels
+          const isHalfStep = currentValue % 1 === 0.5;
+          const lowerIndex = Math.floor(currentValue) - 1;
+          const upperIndex = Math.ceil(currentValue) - 1;
           
           return (
             <div key={axis.key} className="slider-block">
               <div className="slider-header">
                 <span className="title">{axis.label}</span>
-                <span className="value">{currentValue.toFixed(1)}</span>
               </div>
 
               <input
@@ -68,14 +71,26 @@ export default function SlidersPanel({ data, onChange, label }: Props) {
               </div>
 
               <div className="slider-labels">
-                {labels.map((label, index) => (
-                  <span
-                    key={label}
-                    className={`tick ${index === activeIndex ? 'active' : ''}`}
-                  >
-                    {label.toUpperCase()}
-                  </span>
-                ))}
+                {labels.map((label, index) => {
+                  // Determine if this label should be active
+                  let isActive = false;
+                  if (isHalfStep) {
+                    // Between two values: highlight both adjacent labels
+                    isActive = index === lowerIndex || index === upperIndex;
+                  } else {
+                    // Exact value: highlight only the matching label
+                    isActive = index === Math.round(currentValue) - 1;
+                  }
+                  
+                  return (
+                    <span
+                      key={label}
+                      className={`tick ${isActive ? 'active' : ''}`}
+                    >
+                      {label.toUpperCase()}
+                    </span>
+                  );
+                })}
               </div>
             </div>
           );
@@ -84,3 +99,4 @@ export default function SlidersPanel({ data, onChange, label }: Props) {
     </div>
   );
 }
+
